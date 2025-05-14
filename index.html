@@ -15,25 +15,11 @@
     <section id="auth">
       <div class="auth-container">
         <form id="login-form" class="card">
-          <h2>Welcome back, Racer</h2>
+          <h2>Welcome to DeepFormula</h2>
+          <p class="subtext">Enter any email and password to continue</p>
           <input type="email" placeholder="Email" required />
           <input type="password" placeholder="Password" required />
-          <button type="submit">🏁 Login</button>
-          <div class="links">
-            <a href="#" id="show-signup">Don’t have an account? Sign up</a>
-          </div>
-        </form>
-
-        <form id="signup-form" class="card hidden">
-          <h2>Join DeepFormula</h2>
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <input type="password" placeholder="Confirm Password" required />
-          <button type="submit">Create Account</button>
-          <div class="links">
-            <a href="#" id="show-login">Already have an account? Login</a>
-          </div>
+          <button type="submit">Login</button>
         </form>
       </div>
     </section>
@@ -68,7 +54,11 @@
 
       <section id="quiz" class="page hidden">
         <h2>Formula Challenges</h2>
-        <div id="quizzes"></div>
+        <div id="quiz-selection" class="card">
+          <h3>Select Topics</h3>
+          <div id="topic-checkboxes"></div>
+          <button id="start-custom-quiz" disabled>Start Selected Quiz</button>
+        </div>
         <div id="quiz-stage" class="card hidden">
           <h3 id="quiz-title"></h3>
           <label id="quiz-label"></label>

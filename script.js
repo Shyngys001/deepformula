@@ -21,17 +21,7 @@ function showPage(pageId) {
   document.getElementById(pageId).classList.remove('hidden');
 }
 
-document.getElementById('show-signup').onclick = () => {
-  document.getElementById('login-form').classList.add('hidden');
-  document.getElementById('signup-form').classList.remove('hidden');
-};
-document.getElementById('show-login').onclick = () => {
-  document.getElementById('signup-form').classList.add('hidden');
-  document.getElementById('login-form').classList.remove('hidden');
-};
-
-document.getElementById('login-form').onsubmit =
-document.getElementById('signup-form').onsubmit = e => {
+document.getElementById('login-form').onsubmit = e => {
   e.preventDefault();
   document.getElementById('auth').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
@@ -49,15 +39,16 @@ const topics = [
 ];
 const progress = JSON.parse(localStorage.getItem('deepformula-progress')) || Array(6).fill(false);
 
+// === Update car parts
 const carParts = document.querySelectorAll('.part');
 function updateParts() {
   carParts.forEach((el, i) => {
-    if (progress[i]) el.classList.add('unlocked');
-    else el.classList.remove('unlocked');
+    el.classList.toggle('unlocked', progress[i]);
   });
 }
 updateParts();
 
+// === Learn
 const topicsDiv = document.getElementById('topics');
 topics.forEach(t => {
   const card = document.createElement('div');
@@ -73,21 +64,24 @@ topics.forEach(t => {
   topicsDiv.appendChild(card);
 });
 
-// === QUIZ SYSTEM ===
-const quizzesDiv = document.getElementById('quizzes');
+// === Quiz topic selector
+const selectedTopics = new Set();
+const checkboxesDiv = document.getElementById('topic-checkboxes');
 topics.forEach((t, i) => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  const h = document.createElement('h3');
-  h.textContent = t.name;
-  const btn = document.createElement('button');
-  btn.textContent = 'Start Quiz';
-  btn.onclick = () => startQuiz(i);
-  card.append(h, btn);
-  quizzesDiv.appendChild(card);
+  const label = document.createElement('label');
+  label.innerHTML = `<input type="checkbox" data-index="${i}"> ${t.name}`;
+  checkboxesDiv.appendChild(label);
 });
 
-let currentQuizIndex = null;
+checkboxesDiv.addEventListener('change', e => {
+  const index = +e.target.dataset.index;
+  if (e.target.checked) selectedTopics.add(index);
+  else selectedTopics.delete(index);
+  document.getElementById('start-custom-quiz').disabled = selectedTopics.size === 0;
+});
+
+// === Quiz runtime
+let quizQueue = [];
 let currentQuestionIndex = 0;
 
 const stage = document.getElementById('quiz-stage');
@@ -98,17 +92,23 @@ const quizFeedback = document.getElementById('quiz-feedback');
 const btnCheck = document.getElementById('quiz-check');
 const btnNext = document.getElementById('quiz-next');
 
-function startQuiz(index) {
-  currentQuizIndex = index;
+document.getElementById('start-custom-quiz').onclick = () => {
+  quizQueue = [];
+  selectedTopics.forEach(i => {
+    topics[i].formulas.forEach(f => {
+      quizQueue.push({ topic: topics[i].name, formula: f, topicIndex: i });
+    });
+  });
   currentQuestionIndex = 0;
+  document.getElementById('quiz-selection').classList.add('hidden');
   stage.classList.remove('hidden');
-  showQuestion();
-}
+  showCustomQuestion();
+};
 
-function showQuestion() {
-  const q = topics[currentQuizIndex].formulas[currentQuestionIndex];
-  quizTitle.textContent = topics[currentQuizIndex].name;
-  quizLabel.textContent = `Enter the formula for: ${q.split('=')[0].trim()}`;
+function showCustomQuestion() {
+  const q = quizQueue[currentQuestionIndex];
+  quizTitle.textContent = q.topic;
+  quizLabel.textContent = `Enter the formula for: ${q.formula.split('=')[0].trim()}`;
   quizInput.value = '';
   quizFeedback.textContent = '';
   btnCheck.classList.remove('hidden');
@@ -116,7 +116,8 @@ function showQuestion() {
 }
 
 btnCheck.onclick = () => {
-  const correct = quizInput.value.trim() === topics[currentQuizIndex].formulas[currentQuestionIndex];
+  const q = quizQueue[currentQuestionIndex];
+  const correct = quizInput.value.trim() === q.formula;
   quizFeedback.textContent = correct ? '✅ Correct!' : '❌ Try again';
   if (correct) {
     btnCheck.classList.add('hidden');
@@ -125,13 +126,16 @@ btnCheck.onclick = () => {
 };
 
 btnNext.onclick = () => {
+  const q = quizQueue[currentQuestionIndex];
+  progress[q.topicIndex] = true;
   currentQuestionIndex++;
-  if (currentQuestionIndex < topics[currentQuizIndex].formulas.length) {
-    showQuestion();
+  if (currentQuestionIndex < quizQueue.length) {
+    showCustomQuestion();
   } else {
     stage.classList.add('hidden');
-    progress[currentQuizIndex] = true;
-    localStorage.setItem('deepformula-progress', JSON.stringify(progress));
-    updateParts();
+    document.getElementById('quiz-selection').classList.remove('hidden');
+    alert('✅ Test completed!');
   }
+  localStorage.setItem('deepformula-progress', JSON.stringify(progress));
+  updateParts();
 };
