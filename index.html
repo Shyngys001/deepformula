@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepFormula</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="theme-toggle">
+    <button id="toggle-theme">🌙</button>
+  </div>
+
+  <main>
+    <section id="auth">
+      <div class="auth-container">
+        <form id="login-form" class="card">
+          <h2>Welcome back, Racer</h2>
+          <input type="email" placeholder="Email" required />
+          <input type="password" placeholder="Password" required />
+          <button type="submit">🏁 Login</button>
+          <div class="links">
+            <a href="#" id="show-signup">Don’t have an account? Sign up</a>
+          </div>
+        </form>
+
+        <form id="signup-form" class="card hidden">
+          <h2>Join DeepFormula</h2>
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email" required />
+          <input type="password" placeholder="Password" required />
+          <input type="password" placeholder="Confirm Password" required />
+          <button type="submit">Create Account</button>
+          <div class="links">
+            <a href="#" id="show-login">Already have an account? Login</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="app" class="hidden">
+      <header>
+        <h1>🏎️ DeepFormula</h1>
+        <nav>
+          <a href="#" data-page="home">Home</a>
+          <a href="#" data-page="learn">Learn</a>
+          <a href="#" data-page="quiz">Quiz</a>
+        </nav>
+      </header>
+
+      <section id="home" class="page">
+        <h2>Your F1 Learning Garage</h2>
+        <p>Complete quizzes to unlock car parts</p>
+        <div id="car-parts" class="parts-grid">
+          <div class="part" data-index="0">🛞</div>
+          <div class="part" data-index="1">🚩</div>
+          <div class="part" data-index="2">💨</div>
+          <div class="part" data-index="3">💡</div>
+          <div class="part" data-index="4">👁️</div>
+          <div class="part" data-index="5">🔬</div>
+        </div>
+      </section>
+
+      <section id="learn" class="page hidden">
+        <h2>Physics Topics</h2>
+        <div id="topics"></div>
+      </section>
+
+      <section id="quiz" class="page hidden">
+        <h2>Formula Challenges</h2>
+        <div id="quizzes"></div>
+        <div id="quiz-stage" class="card hidden">
+          <h3 id="quiz-title"></h3>
+          <label id="quiz-label"></label>
+          <input id="quiz-input" type="text" placeholder="Type formula..." />
+          <p id="quiz-feedback"></p>
+          <button id="quiz-check">Check</button>
+          <button id="quiz-next" class="hidden">Next</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
