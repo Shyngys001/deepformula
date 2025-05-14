@@ -7,58 +7,60 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Тёмная/светлая тема -->
   <div class="theme-toggle">
     <button id="toggle-theme">🌙</button>
   </div>
 
   <main>
+    <!-- Авторизация -->
     <section id="auth">
-      <div class="auth-container">
-        <form id="login-form" class="card">
-          <h2>Welcome to DeepFormula</h2>
-          <p class="subtext">Enter any email and password to continue</p>
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <button type="submit">Login</button>
-        </form>
-      </div>
+      <form id="login-form" class="card">
+        <h2>Welcome to DeepFormula</h2>
+        <p class="subtext">Enter any email and password to continue</p>
+        <input type="email" placeholder="Email" required />
+        <input type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
     </section>
 
+    <!-- Основное приложение -->
     <section id="app" class="hidden">
       <header>
         <h1>🏎️ DeepFormula</h1>
         <nav>
-          <a href="#" data-page="home">Home</a>
+          <a href="#" data-page="home" class="active">Home</a>
           <a href="#" data-page="learn">Learn</a>
           <a href="#" data-page="quiz">Quiz</a>
         </nav>
       </header>
 
+      <!-- Home -->
       <section id="home" class="page">
         <h2>Your F1 Learning Garage</h2>
         <p>Complete quizzes to unlock car parts</p>
-        <div id="car-parts" class="parts-grid">
-          <div class="part" data-index="0">🛞</div>
-          <div class="part" data-index="1">🚩</div>
-          <div class="part" data-index="2">💨</div>
-          <div class="part" data-index="3">💡</div>
-          <div class="part" data-index="4">👁️</div>
-          <div class="part" data-index="5">🔬</div>
-        </div>
+        <div id="car-parts" class="parts-grid"></div>
       </section>
 
+      <!-- Learn -->
       <section id="learn" class="page hidden">
         <h2>Physics Topics</h2>
+        <div id="filter-buttons" class="filters"></div>
         <div id="topics"></div>
       </section>
 
+      <!-- Quiz -->
       <section id="quiz" class="page hidden">
         <h2>Formula Challenges</h2>
+
+        <!-- Выбор тем для теста -->
         <div id="quiz-selection" class="card">
           <h3>Select Topics</h3>
           <div id="topic-checkboxes"></div>
-          <button id="start-custom-quiz" disabled>Start Selected Quiz</button>
+          <button id="start-custom-quiz" disabled>Start Quiz</button>
         </div>
+
+        <!-- Прохождение теста -->
         <div id="quiz-stage" class="card hidden">
           <h3 id="quiz-title"></h3>
           <label id="quiz-label"></label>
@@ -66,6 +68,12 @@
           <p id="quiz-feedback"></p>
           <button id="quiz-check">Check</button>
           <button id="quiz-next" class="hidden">Next</button>
+        </div>
+
+        <!-- Статистика -->
+        <div id="stats" class="card hidden">
+          <h3>Statistics</h3>
+          <ul id="stats-list"></ul>
         </div>
       </section>
     </section>

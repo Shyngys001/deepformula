@@ -1,3 +1,4 @@
+// --- Theme toggle ---
 const root = document.documentElement;
 const toggleBtn = document.getElementById('toggle-theme');
 toggleBtn.onclick = () => {
@@ -6,21 +7,22 @@ toggleBtn.onclick = () => {
   toggleBtn.textContent = isDark ? '🌙' : '🌞';
 };
 
+// --- Page navigation ---
 document.querySelectorAll('nav a').forEach(link => {
-  link.addEventListener('click', e => {
+  link.onclick = e => {
     e.preventDefault();
-    const target = link.getAttribute('data-page');
-    showPage(target);
+    const page = link.dataset.page;
+    showPage(page);
     document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
     link.classList.add('active');
-  });
+  };
 });
-
-function showPage(pageId) {
+function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  document.getElementById(pageId).classList.remove('hidden');
+  document.getElementById(id).classList.remove('hidden');
 }
 
+// --- Fake login ---
 document.getElementById('login-form').onsubmit = e => {
   e.preventDefault();
   document.getElementById('auth').classList.add('hidden');
@@ -28,7 +30,7 @@ document.getElementById('login-form').onsubmit = e => {
   showPage('home');
 };
 
-// === DATA ===
+// --- Data ---
 const topics = [
   { name: 'Kinematics – Wheels', formulas: ['v = s/t', 'a = Δv/Δt'] },
   { name: 'Dynamics – Rear wing', formulas: ['F = ma', 'p = mv'] },
@@ -37,105 +39,137 @@ const topics = [
   { name: 'Optics – Helmet visor', formulas: ['n = c/v'] },
   { name: 'Quantum Physics – Carbon panels', formulas: ['E = hf'] },
 ];
-const progress = JSON.parse(localStorage.getItem('deepformula-progress')) || Array(6).fill(false);
+const progress = JSON.parse(localStorage.getItem('deepformula-progress')) 
+               || Array(topics.length).fill(false);
 
-// === Update car parts
-const carParts = document.querySelectorAll('.part');
+// --- Home: render parts & update ---
+const carParts = document.getElementById('car-parts');
+topics.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'part';
+  d.dataset.index = i;
+  d.textContent = ['🛞','🚩','💨','💡','👁️','🔬'][i];
+  carParts.append(d);
+});
 function updateParts() {
-  carParts.forEach((el, i) => {
+  document.querySelectorAll('.part').forEach((el, i) => {
     el.classList.toggle('unlocked', progress[i]);
   });
 }
 updateParts();
 
-// === Learn
+// --- Learn: filter buttons & render ---
+const filterDiv = document.getElementById('filter-buttons');
 const topicsDiv = document.getElementById('topics');
-topics.forEach(t => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  const h = document.createElement('h3');
-  h.textContent = t.name;
-  card.appendChild(h);
-  t.formulas.forEach(f => {
-    const p = document.createElement('p');
-    p.textContent = f;
-    card.appendChild(p);
-  });
-  topicsDiv.appendChild(card);
-});
-
-// === Quiz topic selector
-const selectedTopics = new Set();
-const checkboxesDiv = document.getElementById('topic-checkboxes');
 topics.forEach((t, i) => {
-  const label = document.createElement('label');
-  label.innerHTML = `<input type="checkbox" data-index="${i}"> ${t.name}`;
-  checkboxesDiv.appendChild(label);
+  const btn = document.createElement('button');
+  btn.textContent = t.name;
+  btn.onclick = () => {
+    btn.classList.toggle('active');
+    renderTopics();
+  };
+  filterDiv.append(btn);
 });
+function renderTopics() {
+  topicsDiv.innerHTML = '';
+  document.querySelectorAll('#filter-buttons button.active').forEach(btn => {
+    const idx = topics.findIndex(t => t.name === btn.textContent);
+    const t = topics[idx];
+    const card = document.createElement('div');
+    card.className = 'card';
+    const h = document.createElement('h3');
+    h.textContent = t.name;
+    card.append(h);
+    t.formulas.forEach(f => {
+      const p = document.createElement('p');
+      p.textContent = f;
+      card.append(p);
+    });
+    topicsDiv.append(card);
+  });
+}
 
-checkboxesDiv.addEventListener('change', e => {
-  const index = +e.target.dataset.index;
-  if (e.target.checked) selectedTopics.add(index);
-  else selectedTopics.delete(index);
+// --- Quiz: setup selection ---
+const selectedTopics = new Set();
+const cbDiv = document.getElementById('topic-checkboxes');
+topics.forEach((t,i) => {
+  const lbl = document.createElement('label');
+  lbl.innerHTML = `<input type="checkbox" data-index="${i}"> ${t.name}`;
+  cbDiv.append(lbl);
+});
+cbDiv.onchange = e => {
+  const i = +e.target.dataset.index;
+  if (e.target.checked) selectedTopics.add(i);
+  else selectedTopics.delete(i);
   document.getElementById('start-custom-quiz').disabled = selectedTopics.size === 0;
-});
+};
 
-// === Quiz runtime
-let quizQueue = [];
-let currentQuestionIndex = 0;
-
+// --- Quiz runtime ---
+let quizQueue = [], qi = 0;
 const stage = document.getElementById('quiz-stage');
-const quizTitle = document.getElementById('quiz-title');
-const quizLabel = document.getElementById('quiz-label');
-const quizInput = document.getElementById('quiz-input');
-const quizFeedback = document.getElementById('quiz-feedback');
-const btnCheck = document.getElementById('quiz-check');
-const btnNext = document.getElementById('quiz-next');
+const qt = document.getElementById('quiz-title');
+const ql = document.getElementById('quiz-label');
+const qiInput = document.getElementById('quiz-input');
+const qf = document.getElementById('quiz-feedback');
+const cBtn = document.getElementById('quiz-check');
+const nBtn = document.getElementById('quiz-next');
 
 document.getElementById('start-custom-quiz').onclick = () => {
   quizQueue = [];
   selectedTopics.forEach(i => {
     topics[i].formulas.forEach(f => {
-      quizQueue.push({ topic: topics[i].name, formula: f, topicIndex: i });
+      quizQueue.push({ topic: topics[i].name, formula: f, idx: i });
     });
   });
-  currentQuestionIndex = 0;
+  qi = 0;
   document.getElementById('quiz-selection').classList.add('hidden');
   stage.classList.remove('hidden');
-  showCustomQuestion();
+  showQuestion();
 };
 
-function showCustomQuestion() {
-  const q = quizQueue[currentQuestionIndex];
-  quizTitle.textContent = q.topic;
-  quizLabel.textContent = `Enter the formula for: ${q.formula.split('=')[0].trim()}`;
-  quizInput.value = '';
-  quizFeedback.textContent = '';
-  btnCheck.classList.remove('hidden');
-  btnNext.classList.add('hidden');
+function showQuestion() {
+  const q = quizQueue[qi];
+  qt.textContent = q.topic;
+  ql.textContent = `Enter formula for: ${q.formula.split('=')[0].trim()}`;
+  qiInput.value = '';
+  qf.textContent = '';
+  cBtn.classList.remove('hidden');
+  nBtn.classList.add('hidden');
 }
 
-btnCheck.onclick = () => {
-  const q = quizQueue[currentQuestionIndex];
-  const correct = quizInput.value.trim() === q.formula;
-  quizFeedback.textContent = correct ? '✅ Correct!' : '❌ Try again';
-  if (correct) {
-    btnCheck.classList.add('hidden');
-    btnNext.classList.remove('hidden');
+cBtn.onclick = () => {
+  const q = quizQueue[qi];
+  if (qiInput.value.trim() === q.formula) {
+    qf.textContent = '✅ Correct!';
+    cBtn.classList.add('hidden');
+    nBtn.classList.remove('hidden');
+  } else {
+    qf.textContent = '❌ Try again';
   }
 };
 
-btnNext.onclick = () => {
-  const q = quizQueue[currentQuestionIndex];
-  progress[q.topicIndex] = true;
-  currentQuestionIndex++;
-  if (currentQuestionIndex < quizQueue.length) {
-    showCustomQuestion();
+nBtn.onclick = () => {
+  const q = quizQueue[qi];
+  progress[q.idx] = true;
+  updateParts();
+  qi++;
+  if (qi < quizQueue.length) {
+    showQuestion();
   } else {
     stage.classList.add('hidden');
     document.getElementById('quiz-selection').classList.remove('hidden');
-    alert('✅ Test completed!');
+    document.getElementById('stats').classList.remove('hidden');
+    showStats();
   }
   localStorage.setItem('deepformula-progress', JSON.stringify(progress));
-  updateParts();
 };
+
+function showStats() {
+  const ul = document.getElementById('stats-list');
+  ul.innerHTML = '';
+  topics.forEach((t,i) => {
+    const li = document.createElement('li');
+    li.textContent = `${t.name}: ${progress[i] ? 'Passed' : 'Not passed'}`;
+    ul.append(li);
+  });
+}
